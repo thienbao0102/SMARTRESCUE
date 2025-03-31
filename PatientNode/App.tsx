@@ -1,24 +1,34 @@
-import { SafeAreaView } from 'react-native';
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import Home from './src/screens/Home';
-import Login from './src/screens/Login';
-import Profile from './src/screens/Profile';
 
-const Stack = createStackNavigator();
+import React, { useState } from 'react';
+import MapView from 'react-native-maps';
+import { StyleSheet, View } from 'react-native';
+
 const App = () => {
+  const [region, setRegion] = useState({
+    latitude: 10.7769,
+    longitude: 106.7009,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
+  });
   return (
-    <SafeAreaView style={{flex: 1}}>
-      <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Home" component={Home} />
-        <Stack.Screen name="Home" component={Login} />
-        <Stack.Screen name="Home" component={Profile} />
-      </Stack.Navigator>
-    </NavigationContainer>
-    </SafeAreaView>
+    <View style={styles.container}>
+    <MapView
+      style={styles.map}
+      provider="google"
+      region={region} // Bản đồ thay đổi khi `region` thay đổi
+      onRegionChangeComplete={(newRegion) => setRegion(newRegion)} // Cập nhật state khi di chuyển bản đồ
+    />
+  </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
+});
 
 export default App;
