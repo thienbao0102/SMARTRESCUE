@@ -2,6 +2,7 @@ import { Button, View } from 'react-native';
 import React , { useState } from 'react';
 import LoadMap from '../components/LoadMap';
 import GetCurrentLocation from '../components/GetLocation';
+import GetSensorData from '../components/GetSensorData';
 
 const Home = ({ navigation }) => {
   const [location, setLocation] = useState({
@@ -15,6 +16,7 @@ const Home = ({ navigation }) => {
       <Button title="Go to Profile" onPress={() => navigation.navigate('Profile')} />
       <GetCurrentLocation location={location} setLocation={setLocation}/>
       <LoadMap region={location} setRegion={setLocation}/>
+      <GetSensorData/>
     </View>
   );
 };
