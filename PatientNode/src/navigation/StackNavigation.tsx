@@ -17,7 +17,7 @@ const StackNavigation = () => {
         <Stack.Screen name="Profile" component={Profile} />
       </Stack.Navigator>
     </NavigationContainer>
-  )
-}
+  );
+};
 
 export default StackNavigation;

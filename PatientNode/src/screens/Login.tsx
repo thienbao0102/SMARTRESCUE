@@ -2,7 +2,6 @@ import { Button, Text, View } from 'react-native';
 import React from 'react';
 
 const Login = ({ navigation }) => {
-  console.log('im here 3');
   return (
     <View>
       <Text>Login</Text>
