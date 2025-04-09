@@ -1,11 +1,12 @@
-import { Button, View } from 'react-native';
+import { Button, StyleSheet, View } from 'react-native';
 import React, { useEffect } from 'react';
 import { useRoute } from '@react-navigation/native';
-// import ShowListHospital from '../components/ShowListHospital';
 import { registerNotificationEvents, requestNotificationPermission } from '../services/Notifications';
 import { startBackgroundTask, stopBackgroundTask } from '../services/ServiceRunBackground';
 import { getLocationPermission } from '../services/HandlerServices';
 import { showAlert } from '../services/GetDataSensors';
+import Header from '../components/Header';
+import HealthMetrics from '../components/HealthMetrics';
 
 const Home = ({ navigation }:any) => {
   const route = useRoute();
@@ -28,12 +29,18 @@ const Home = ({ navigation }:any) => {
   }, []);
 
   return (
-    <View style={{ flex: 1 }}>
-      <Button title="Go to Profile" onPress={() => navigation.navigate('Profile')} />
-      <Button title="Stop background running" onPress={() => stopBackgroundTask()} />
-      {/* <ShowListHospital location={location} /> */}
+    <View style={styles.container}>
+      <Header patientName="Nguyen Van AA" />
+      <Button title="stop Background Service" onPress={stopBackgroundTask} />
+      <HealthMetrics heartRate={102} spo2={97} bloodPressure="120/80" />
     </View>
   );
 };
 
 export default Home;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

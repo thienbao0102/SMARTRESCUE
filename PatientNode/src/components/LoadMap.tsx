@@ -11,7 +11,7 @@ const LoadMap = ({ region, setRegion }) => {
     longitude: 106.69345779879565,
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
-  }
+  };
 
   useEffect(() => {
     const getRoute = async () => {
@@ -40,10 +40,10 @@ const LoadMap = ({ region, setRegion }) => {
       setRegion(prevRegion => ({
         ...prevRegion,
         latitude: prevRegion.latitude, // Cập nhật vị trí (ví dụ: dịch chuyển một chút)
-        longitude: prevRegion.longitude
+        longitude: prevRegion.longitude,
       }));
     }, 15000); // 15 giây
-  
+
     return () => clearInterval(interval); // Xóa interval khi component unmount
   }, []);
 
