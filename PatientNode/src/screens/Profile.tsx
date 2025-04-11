@@ -37,7 +37,7 @@ const Profile = ({ navigation }) => {
       </View>
 
       <View style={styles.avatarContainer}>
-        <Image 
+        <Image
           source={require('../assets/images/avatar.png')} 
           style={styles.avatar}
         />
@@ -49,7 +49,7 @@ const Profile = ({ navigation }) => {
       </View>
 
       <View style={styles.profileSection}>
-        <ProfileField 
+        <ProfileField
           label="Họ và tên"
           value={profile.name}
           editable={isEditing}
