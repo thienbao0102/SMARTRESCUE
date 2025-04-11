@@ -37,7 +37,7 @@ const veryIntensiveTask = async () => { //taskDataArguments
                         console.warn("Không lấy được vị trí!");
                         return;
                     }
-                    console.log('currentLocation:', currentLocation);
+                    // console.log('currentLocation:', currentLocation);
                     if (lastedLocation === null) {
                         lastedLocation = currentLocation;
                         updateLocation(currentLocation);

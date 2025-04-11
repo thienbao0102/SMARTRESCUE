@@ -1,9 +1,40 @@
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { handlerLogin } from '../services/APiServices';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { jwtDecode } from "jwt-decode";
+import { navigate } from '../navigation/RootNavigation';
 
-const Login = ({ navigation }) => {
+const Login = ({ navigation }: any) => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    const checkToken = async () => {
+      const token = await AsyncStorage.getItem('refreshToken');
+
+      if (token) {
+        try {
+          const decoded = jwtDecode(token);
+          const now = Date.now() / 1000;
+
+          if (decoded.exp && decoded.exp > now) {
+            // Token còn hiệu lực → vào Home
+            navigate('Home');
+            return;
+          }
+        } catch (error) {
+          console.log('Decode error:', error);
+        }
+      }
+
+      // Token không có hoặc hết hạn → vào Login
+      navigate('Login');
+    };
+
+    checkToken();
+  }, []);
+
   return (
     <View style={styles.container}>
       <Image source={require('../assets/images/patient.png')} style={styles.logo} />
@@ -20,7 +51,7 @@ const Login = ({ navigation }) => {
       <TextInput
         style={styles.input}
         placeholder="Mật khẩu"
-        maxLength={20}
+        maxLength={25}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -31,7 +62,12 @@ const Login = ({ navigation }) => {
       >
         <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
+      <TouchableOpacity style={styles.button} onPress={() =>{
+        console.log('phone:', phone);
+        console.log('password:', password);
+        handlerLogin(phone, password);
+        navigation.navigate('Home');
+      }}>
         <Text style={styles.buttonText}>Đăng Nhập</Text>
       </TouchableOpacity>
     </View>

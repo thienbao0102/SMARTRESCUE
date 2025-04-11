@@ -66,7 +66,7 @@ async function showAlertNotifi(currentDeltaAccel: number, currentDeltaGyro: numb
     if ((currentDeltaAccel < CRASH_THRESHOLD && currentDeltaGyro < GYRO_THRESHOLD) || isShowAlert) {
         return;
     }
-
+    userResponded = false;
     isShowAlert = true;
     console.log('delta: ', currentDeltaAccel, " ; ", currentDeltaGyro);
     if (currentAppState === 'active') {

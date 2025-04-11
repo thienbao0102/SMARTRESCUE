@@ -53,7 +53,7 @@ export async function getCurrentLocation() {
     const permissionGranted = await PermissionsAndroid.check( //hàm kiểm tra quyền
         PermissionsAndroid.PERMISSIONS.ACCESS_BACKGROUND_LOCATION
     );
-    console.log('permissionGranted:', permissionGranted);
+    // console.log('permissionGranted:', permissionGranted);
     if (!permissionGranted) {
         console.warn('Location permission is not granted.');
         return;
