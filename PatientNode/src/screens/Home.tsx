@@ -30,8 +30,8 @@ const Home = ({ navigation }:any) => {
 
   return (
     <View style={styles.container}>
-      <Header patientName="Nguyen Van AA" />
-      <Button title="stop Background Service" onPress={stopBackgroundTask} />
+      <Header />
+      {/* <Button title="stop Background Service" onPress={stopBackgroundTask} /> */}
       <HealthMetrics heartRate={102} spo2={97} bloodPressure="120/80" />
     </View>
   );

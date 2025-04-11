@@ -3,14 +3,15 @@ import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 
 
-const Header = ({ patientName }) => {
+const Header = () => {
 
   const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
       {/* TIeu de */}
-      <Text style={styles.appName}>PatientNode</Text>
+      {/* <Text style={styles.appName}>PatientNode</Text> */}
+      <Image source={require('../assets/images/logo1.png')} style={styles.logo} />
       <View style={styles.profileContainer}>
         {/* Avatar & Ten */}
         <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
@@ -18,7 +19,6 @@ const Header = ({ patientName }) => {
             source={require('../assets/images/avatar.png')}
             style={styles.avatar}
           />
-          <Text style={styles.patientName}>{patientName || 'Guest'}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -43,14 +43,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 70,
+    height: 70,
+    borderRadius: 40,
   },
-  patientName: {
-    right: 25,
-    paddingTop: 5,
-    fontSize: 16,
+  logo:{
+    height: 70,
+    width: 70,
+    borderRadius: 40,
   },
 });
 

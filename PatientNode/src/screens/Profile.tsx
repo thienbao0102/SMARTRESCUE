@@ -5,13 +5,21 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 const Profile = ({ navigation}: any) => {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
+    id: '1',
     name: 'Nguyễn Văn A',
-    gender: 'Nam',
-    dob: '01/01/1990',
-    address: '123 Đường ABC, Quận 1, TP.HCM',
-    phone: '0901234567',
-    email: 'nguyenvana@gmail.com'
+    age: 34,
+    phoneNumber: '0901234567',
+    password: '',
+    diseaseDescription: 'Ho kéo dài, sốt nhẹ',
+    nowLocation: [10.762622, 106.660172],
+    roadHistory: [
+      [10.762622, 106.660172],
+      [10.7769, 106.7009],
+    ],
+    prioritize: 'Nguyen Van B', // id người thân ưu tiên
+    relatives: ['Nguyen Van B', 'Nguyen Van C']
   });
+
 
   const handleSave = () => {
     setIsEditing(false);
@@ -38,7 +46,7 @@ const Profile = ({ navigation}: any) => {
 
       <View style={styles.avatarContainer}>
         <Image
-          source={require('../assets/images/avatar.png')} 
+          source={require('../assets/images/avatar.png')}
           style={styles.avatar}
         />
         {isEditing && (
@@ -53,42 +61,45 @@ const Profile = ({ navigation}: any) => {
           label="Họ và tên"
           value={profile.name}
           editable={isEditing}
-          onChangeText={(text) => setProfile({...profile, name: text})}
+          onChangeText={(text) => setProfile({ ...profile, name: text })}
         />
-        <ProfileField 
-          label="Giới tính"
-          value={profile.gender}
+        <ProfileField
+          label="Tuổi"
+          value={profile.age.toString()}
           editable={isEditing}
-          onChangeText={(text) => setProfile({...profile, gender: text})}
+          keyboardType="numeric"
+          onChangeText={(text) => setProfile({ ...profile, age: parseInt(text) || 0 })}
         />
-        <ProfileField 
-          label="Ngày sinh"
-          value={profile.dob}
-          editable={isEditing}
-          onChangeText={(text) => setProfile({...profile, dob: text})}
-        />
-        <ProfileField 
-          label="Địa chỉ"
-          value={profile.address}
-          editable={isEditing}
-          multiline
-          onChangeText={(text) => setProfile({...profile, address: text})}
-        />
-        <ProfileField 
+        <ProfileField
           label="Số điện thoại"
-          value={profile.phone}
+          value={profile.phoneNumber}
           editable={isEditing}
           keyboardType="phone-pad"
-          onChangeText={(text) => setProfile({...profile, phone: text})}
+          onChangeText={(text) => setProfile({ ...profile, phoneNumber: text })}
         />
-        <ProfileField 
-          label="Email"
-          value={profile.email}
+        <ProfileField
+          label="Mô tả bệnh"
+          value={profile.diseaseDescription}
           editable={isEditing}
-          keyboardType="email-address"
-          onChangeText={(text) => setProfile({...profile, email: text})}
+          multiline
+          onChangeText={(text) => setProfile({ ...profile, diseaseDescription: text })}
+        />
+        <ProfileField
+          label="Người thân ưu tiên"
+          value={profile.prioritize}
+          editable={isEditing}
+          onChangeText={(text) => setProfile({ ...profile, prioritize: text })}
+        />
+        <ProfileField
+          label="Người thân"
+          value={profile.relatives.join(', ')}
+          editable={isEditing}
+          onChangeText={(text) =>
+            setProfile({ ...profile, relatives: text.split(',').map((id) => id.trim()) })
+          }
         />
       </View>
+
     </ScrollView>
   );
 };
