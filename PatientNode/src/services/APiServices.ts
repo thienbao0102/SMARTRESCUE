@@ -2,10 +2,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert } from "react-native";
 import { navigate } from "../navigation/RootNavigation";
 
-const IPV4 = '192.168.0.100';
+const IPV4 = '192.168.72.96';
 //API gửi thông báo đển người thân khi có sự cố xảy ra với người dùng
 export async function sendWarning() {
-    const relativeId = '12345'; // ID của người thân
+    const relativeUser = await AsyncStorage.getItem("patientUser");
+    const relative = relativeUser ? JSON.parse(relativeUser) : null;
+    const relativeId = relative ? relative.prioritize : null;
     const accessToken = await AsyncStorage.getItem("accessToken");
 
     fetch(`http://${IPV4}:8000/warning/${relativeId}`, {
@@ -70,7 +72,7 @@ export async function updateLocation(location: any) {
         })
         .then(data => {
             if (!data) return;
-            console.log('Location from sever', data.location);
+            console.log('message from sever', data.message);
         })
         .catch(error => {
             console.error('Error sending warning:', error?.message ?? error);

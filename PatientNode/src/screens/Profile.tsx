@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView, Image 
 import React, { useState } from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const Profile = ({ navigation }) => {
+const Profile = ({ navigation}: any) => {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
     name: 'Nguyễn Văn A',
