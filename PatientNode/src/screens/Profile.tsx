@@ -1,24 +1,41 @@
 import { StyleSheet, Text, View, TouchableOpacity, TextInput, ScrollView, Image } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Profile = ({ navigation}: any) => {
+type ProfileProps = {
+  name: string;
+  age: number;
+  phoneNumber: string;
+  diseaseDescription: string;
+  prioritize: string;
+  relatives: string[];
+}
+
+
+const  Profile = ({ navigation}: any) => {
+
   const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState({
-    id: '1',
-    name: 'Nguyễn Văn A',
-    age: 34,
-    phoneNumber: '0901234567',
-    password: '',
-    diseaseDescription: 'Ho kéo dài, sốt nhẹ',
-    nowLocation: [10.762622, 106.660172],
-    roadHistory: [
-      [10.762622, 106.660172],
-      [10.7769, 106.7009],
-    ],
-    prioritize: 'Nguyen Van B', // id người thân ưu tiên
-    relatives: ['Nguyen Van B', 'Nguyen Van C']
-  });
+  const [profile, setProfile] = useState<ProfileProps>();
+
+  useEffect(() => {
+    const getDataStorage = async () => {
+      const user = await AsyncStorage.getItem('patientUser');
+      if (user) {
+        const patient = JSON.parse(user);
+        setProfile({
+          name: patient.name,
+          age: patient.age,
+          phoneNumber: patient.phoneNumber,
+          diseaseDescription: patient.diseaseDescription,
+          prioritize: patient.prioritize,
+          relatives: patient.relatives,
+        });
+      }
+    }
+
+    getDataStorage();
+  },[]);
 
 
   const handleSave = () => {
@@ -59,42 +76,42 @@ const Profile = ({ navigation}: any) => {
       <View style={styles.profileSection}>
         <ProfileField
           label="Họ và tên"
-          value={profile.name}
+          value={profile?.name}
           editable={isEditing}
-          onChangeText={(text) => setProfile({ ...profile, name: text })}
+          onChangeText={(text: string) => setProfile({ ...profile, name: text })}
         />
         <ProfileField
           label="Tuổi"
-          value={profile.age.toString()}
+          value={profile?.age.toString()}
           editable={isEditing}
           keyboardType="numeric"
-          onChangeText={(text) => setProfile({ ...profile, age: parseInt(text) || 0 })}
+          onChangeText={(text: string) => setProfile({ ...profile, age: parseInt(text) || 0 })}
         />
         <ProfileField
           label="Số điện thoại"
-          value={profile.phoneNumber}
+          value={profile?.phoneNumber}
           editable={isEditing}
           keyboardType="phone-pad"
-          onChangeText={(text) => setProfile({ ...profile, phoneNumber: text })}
+          onChangeText={(text: string) => setProfile({ ...profile, phoneNumber: text })}
         />
         <ProfileField
           label="Mô tả bệnh"
-          value={profile.diseaseDescription}
+          value={profile?.diseaseDescription}
           editable={isEditing}
           multiline
-          onChangeText={(text) => setProfile({ ...profile, diseaseDescription: text })}
+          onChangeText={(text: string) => setProfile({ ...profile, diseaseDescription: text })}
         />
         <ProfileField
           label="Người thân ưu tiên"
-          value={profile.prioritize}
+          value={profile?.prioritize}
           editable={isEditing}
-          onChangeText={(text) => setProfile({ ...profile, prioritize: text })}
+          onChangeText={(text: string) => setProfile({ ...profile, prioritize: text })}
         />
         <ProfileField
           label="Người thân"
-          value={profile.relatives.join(', ')}
+          value={profile?.relatives.join(', ')}
           editable={isEditing}
-          onChangeText={(text) =>
+          onChangeText={(text: string) =>
             setProfile({ ...profile, relatives: text.split(',').map((id) => id.trim()) })
           }
         />
