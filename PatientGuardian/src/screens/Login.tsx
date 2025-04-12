@@ -1,7 +1,8 @@
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import React, { useState } from 'react';
+import { handlerLogin } from '../services/HandlerDataFromSever';
 
-const Login = ({ navigation }) => {
+const Login = ({ navigation }:any) => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   return (
@@ -41,7 +42,10 @@ const Login = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Home')}>
+      <TouchableOpacity style={styles.button} onPress={() => {
+        handlerLogin(phone, password);
+        // navigation.navigate('Home');
+      }}>
         <Text style={styles.buttonText}>Đăng Nhập</Text>
       </TouchableOpacity>
     </View>

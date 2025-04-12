@@ -12,11 +12,12 @@ import AddPatientScreen from '../screens/AddPatient';
 import SettingScreen from '../screens/SettingScreen';
 import PatientManagementScreen from '../screens/ManagerPatien';
 import RegisterPatientScreen from '../screens/RegisterPatientScreen';
+import { navigationRef } from './RootNavigation';
 
 const Stack = createStackNavigator();
 const StackNavigation = () => {
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator initialRouteName="Login" screenOptions={{headerShown: false}}>
         <Stack.Screen name="Login" component={Login}/>
         <Stack.Screen name="Home" component={HomeScreen} />

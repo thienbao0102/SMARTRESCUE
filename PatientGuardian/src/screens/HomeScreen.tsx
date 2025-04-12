@@ -1,18 +1,24 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AdminHeader from '../components/Header';
 import PatientList from '../components/PatienList';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { patients } from '../data/patient';
+import { reciveMessageWarning } from '../services/HandlerDataFromSever';
 
-const HomeScreen = ({navigation}) => {
+const HomeScreen = ({navigation}: any) => {
+
+  useEffect(()=>{
+    reciveMessageWarning();
+  },[])
+
   return (
     <SafeAreaView style={styles.container}>
       <AdminHeader title="Trang chủ " notificationCount={1} onNotificationPress={() => {}}/>
         <PatientList
           patients={patients}
-          onPressItem={(patient) => 
+          onPressItem={(patient: any) => 
             navigation.navigate('PatientDetail', { patient })
           }
         />

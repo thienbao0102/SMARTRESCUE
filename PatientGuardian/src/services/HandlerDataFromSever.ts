@@ -1,83 +1,40 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Alert } from "react-native";
-import { navigate } from "../navigation/RootNavigation";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { jwtDecode } from 'jwt-decode';
+import { Alert } from 'react-native';
+import EventSource from 'react-native-sse';
+import { navigate } from '../navigation/RootNavigation';
 
 const IPV4 = '192.168.72.96';
-//API gửi thông báo đển người thân khi có sự cố xảy ra với người dùng
-export async function sendWarning() {
-    const relativeUser = await AsyncStorage.getItem("patientUser");
-    const relative = relativeUser ? JSON.parse(relativeUser) : null;
-    const relativeId = relative ? relative.prioritize : null;
-    const accessToken = await AsyncStorage.getItem("accessToken");
+const id = '64e8fa54b84c2b3d7e5abc10';
 
-    fetch(`http://${IPV4}:8000/warning/${relativeId}`, {
-        method: 'POST',
+//xử lý nhận cảnh báo từ sever gửi về
+export async function reciveMessageWarning() {
+    const accessToken = await AsyncStorage.getItem("accessToken")
+
+    if(accessToken){
+        const decoded = jwtDecode(accessToken);
+        const now = Date.now() / 1000;
+        if (!decoded.exp || decoded.exp <= now){
+            refreshAccessToken(reciveMessageWarning);
+            return;
+        }
+    }
+
+    const source = new EventSource(`http://${IPV4}:8000/sendwarning/${id}`,{
         headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            message: 'Warning: High temperature detected!',
-        }),
-    })
-        .then(response => {
-            if (response.status === 401 || response.status === 403) {
-                refreshAccessToken(sendWarning);
-                return;
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (!data) return;
-            console.log('Warning sent successfully:', data);
-        })
-        .catch(error => {
-            // tránh truy cập .stack trực tiếp
-            console.error('Error sending warning:', error?.message ?? error);
-            console.log('Full error object:', JSON.stringify(error, null, 2));
-        });
-}
+          Authorization: `Bearer ${accessToken}`, // Gửi token vào header
+        }
+      });
 
-//API cập nhật vị trí mới của patient lên server
-export async function updateLocation(location: any) {
-    if (location === null) return;
-    const user = await AsyncStorage.getItem("patientUser");
-    const patient = user ? JSON.parse(user) : null;
-    const patientId = patient ? patient._id : null;
-    const accessToken = await AsyncStorage.getItem("accessToken");
+    // Khi nhận được tin nhắn từ server
+    source.addEventListener('message', (event) => {
+        const data = JSON.parse(event.data);
+        console.log('Dữ liệu nhận được từ server:', data);
 
-    const currentLocation = {
-        type: "Point",
-        coordinates: [location.latitude, location.longitude]
-    };
-    console.log('currentLocation:', currentLocation);
-    console.log('patientId:', patientId);
+        // Xử lý dữ liệu như: hiển thị thông báo, điều hướng...
+    });
 
-    fetch(`http://${IPV4}:8000/updateLocation/${patientId}`, {
-        method: 'PUT',
-        headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            location: currentLocation,
-        }),
-    })
-        .then(response => {
-            if (response.status === 401 || response.status === 403) {
-                refreshAccessToken(() => updateLocation(location));
-                return;
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (!data) return;
-            console.log('message from sever', data.message);
-        })
-        .catch(error => {
-            console.error('Error sending warning:', error?.message ?? error);
-            console.log('Full error object:', JSON.stringify(error, null, 2));
-        });
+    // source.open();
 }
 
 //API login
@@ -103,7 +60,7 @@ export function handlerLogin(phoneNumber: string, password: string) {
         body: JSON.stringify({
             phoneNumber: phoneNumber,
             password: password,
-            userRole: 1,
+            userRole: 0,
         }),
     })
         .then(async (response) => {
@@ -125,17 +82,17 @@ export function handlerLogin(phoneNumber: string, password: string) {
             if (!data) return;
             await AsyncStorage.setItem("accessToken", data.accessToken);
             await AsyncStorage.setItem("refreshToken", data.refreshToken);
-            await AsyncStorage.setItem("patientUser", JSON.stringify(data.user));
+            await AsyncStorage.setItem("relativesUser", JSON.stringify(data.user));
             console.log('Access token:', await AsyncStorage.getItem("accessToken"));
             console.log('Refresh token:', await AsyncStorage.getItem("refreshToken"));
-            console.log('User:', await AsyncStorage.getItem("patientUser"));
+            console.log('User:', await AsyncStorage.getItem("relativesUser"));
             navigate('Home');
         })
         .catch(error => {
             console.error('Error sending warning:', error?.message ?? error);
             console.log('Full error object:', JSON.stringify(error, null, 2));
         });
-}
+};
 
 //access token hết hạn thì gọi api này để lấy access token mới
 async function refreshAccessToken(callback = () => { }) {
@@ -179,3 +136,26 @@ async function refreshAccessToken(callback = () => { }) {
         );
 
 };
+
+
+export async function checkToken(){
+    const token = await AsyncStorage.getItem('refreshToken');
+
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        const now = Date.now() / 1000;
+
+        if (decoded.exp && decoded.exp > now) {
+          // Token còn hiệu lực → vào Home
+          navigate('Home');
+          return;
+        }
+      } catch (error) {
+        console.log('Decode error:', error);
+      }
+    }
+
+    // Token không có hoặc hết hạn → vào Login
+    navigate('Login');
+  };

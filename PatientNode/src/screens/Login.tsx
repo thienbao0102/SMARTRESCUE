@@ -66,7 +66,7 @@ const Login = ({ navigation }: any) => {
         console.log('phone:', phone);
         console.log('password:', password);
         handlerLogin(phone, password);
-        navigation.navigate('Home');
+        // navigation.navigate('Home');
       }}>
         <Text style={styles.buttonText}>Đăng Nhập</Text>
       </TouchableOpacity>
