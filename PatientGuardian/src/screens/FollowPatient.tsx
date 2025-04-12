@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import MapFollower from '../components/MapFollower';
+import ViewHistoryButton from '../components/ViewHistoryButton';
 import { patients } from '../data/patient';
 
 const FollowPatient = ({ route, navigation }) => {
@@ -10,12 +11,20 @@ const FollowPatient = ({ route, navigation }) => {
 
   const patient = patients.find(p => p.id === patientId);
 
-  const [location, setLocation] = useState({
+  const currentLocation = {
     latitude: patient?.latitude || 0,
     longitude: patient?.longitude || 0,
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
-  });
+  };
+
+  const [showHistory, setShowHistory] = useState(false);
+
+  // Vị trí trước đó giả lập (ví dụ cách 0.01 độ)
+  const previousLocation = {
+    latitude: currentLocation.latitude - 0.01,
+    longitude: currentLocation.longitude - 0.01,
+  };
 
   return (
     <View style={styles.container}>
@@ -25,8 +34,15 @@ const FollowPatient = ({ route, navigation }) => {
         <Text style={styles.backText}>Quay lại</Text>
       </TouchableOpacity>
 
-      {/* Component bản đồ đã tách riêng */}
-      <MapFollower location={location} name={patient?.name} />
+      {/* Nút xem lịch sử */}
+      <ViewHistoryButton onPress={() => setShowHistory(!showHistory)} />
+
+      {/* Bản đồ */}
+      <MapFollower
+        location={currentLocation}
+        name={patient?.name}
+        historyLocation={showHistory ? previousLocation : null}
+      />
     </View>
   );
 };
@@ -46,7 +62,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 8,
     borderRadius: 8,
-    zIndex: 1,
+    zIndex: 3,
   },
   backText: {
     color: '#ffffff',

@@ -4,7 +4,7 @@ import { Alert } from 'react-native';
 import EventSource from 'react-native-sse';
 import { navigate } from '../navigation/RootNavigation';
 
-const IPV4 = '192.168.72.96';
+const IPV4 = '192.168.1.5';
 const id = '64e8fa54b84c2b3d7e5abc10';
 
 //xử lý nhận cảnh báo từ sever gửi về

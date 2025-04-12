@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-
+const IPV4 = '192.168.1.5'; // Địa chỉ IP của máy chủ
 const Register = () => {
     const [fullName, setFullName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -10,7 +10,7 @@ const Register = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
 
     const navigation = useNavigation();
-    const handleRegister = () => {
+    const handleRegister = async () => {
         if (!fullName || !phoneNumber || !password || !confirmPassword) {
             Alert.alert('Lỗi', 'Vui lòng nhập đầy đủ thông tin');
             return;
@@ -18,6 +18,31 @@ const Register = () => {
         if (password !== confirmPassword) {
             Alert.alert('Lỗi', 'Mật khẩu xác nhận không khớp');
             return;
+        }
+        try {
+            const response = await fetch(`http://${IPV4}:8000/signup`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fullName,
+                    phoneNumber,
+                    password,
+                }),
+            });
+    
+            const data = await response.json();
+    
+            if (response.status === 201) {
+                Alert.alert('Thành công', `Chào mừng, ${data.user.fullName}!`);
+                navigation.navigate('Home');
+            } else {
+                Alert.alert('Lỗi', data.message || 'Đăng ký thất bại');
+            }
+        } catch (error) {
+            console.error('Lỗi kết nối:', error);
+            Alert.alert('Lỗi', 'Không thể kết nối đến máy chủ');
         }
 
         // Xử lý đăng ký thành công ở đây
