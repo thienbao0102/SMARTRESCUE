@@ -1,27 +1,86 @@
-import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const Profile = ({ navigation }) => {
-  // Dữ liệu mẫu
-  const profileData = {
-    name: "Dr. Nguyễn Văn A",
-    position: "Người quản lý AA",
-    city: "Hồ Chí Minh",
-    email: "dr.nguyenvana@example.com",
-    phone: "0912 345 678",
-    stats: {
-      patients: 42,
-      alerts: 5,
-      activeCases: 8,
-    },
+const Profile = ({ navigation, route }) => {
+  const [profileData, setProfileData] = useState(null);
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Lấy dữ liệu profile từ AsyncStorage hoặc từ route params
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        // Thử lấy từ route.params trước (nếu điều hướng từ màn hình khác có truyền data)
+        if (route.params?.userData) {
+          setProfileData(route.params.userData);
+        } else {
+          // Nếu không có thì lấy từ AsyncStorage
+          const userData = await AsyncStorage.getItem('userData');
+          if (userData) {
+            setProfileData(JSON.parse(userData));
+          }
+        }
+        
+        // TODO: Gọi API để lấy activities gần đây nếu cần
+        setActivities([
+          { id: 1, action: "Đã đăng nhập hệ thống", time: "Hôm nay" },
+          // Thêm các activities khác từ API
+        ]);
+      } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu:', error);
+        Alert.alert('Lỗi', 'Không thể tải thông tin hồ sơ');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+
+  const handleLogout = async () => {
+    Alert.alert(
+      'Đăng xuất',
+      'Bạn có chắc chắn muốn đăng xuất?',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        { 
+          text: 'Đăng xuất', 
+          style: 'destructive', 
+          onPress: async () => {
+            try {
+              await AsyncStorage.removeItem('userData');
+              await AsyncStorage.removeItem('accessToken');
+              navigation.replace('Login');
+            } catch (error) {
+              console.error('Lỗi khi đăng xuất:', error);
+            }
+          }
+        }
+      ]
+    );
   };
 
-  const activities = [
-    { id: 1, action: "Đã xử lý cảnh báo", patient: "Nguyễn Thị B", time: "2 giờ trước" },
-    { id: 2, action: "Đã thêm bệnh nhân mới", patient: "Trần Văn C", time: "Hôm nay, 09:30" },
-    { id: 3, action: "Đã cập nhật hồ sơ", patient: "Lê Thị D", time: "Hôm qua, 16:45" },
-  ];
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Đang tải thông tin...</Text>
+      </View>
+    );
+  }
+
+  if (!profileData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Không tìm thấy thông tin người dùng</Text>
+        <TouchableOpacity onPress={() => navigation.replace('Login')}>
+          <Text style={styles.loginText}>Đăng nhập lại</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -31,33 +90,24 @@ const Profile = ({ navigation }) => {
           <Icon name="arrow-back" size={24} color="#2E86C1" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Hồ sơ cá nhân</Text>
-       
-         {/* Placeholder for alignment */}
-         <View style={{ width: 24 }} />
+        <View style={{ width: 24 }} />
       </View>
 
       {/* Profile Card */}
       <View style={styles.profileCard}>
         <Image
-          source={{ uri: 'https://i.pravatar.cc/150?img=11' }} 
+          source={{ uri: profileData.avatar || 'https://i.pravatar.cc/150?img=11' }} 
           style={styles.avatar}
         />
-        <Text style={styles.name}>{profileData.name}</Text>
-        <Text style={styles.position}>{profileData.position}</Text>
-        <Text style={styles.hospital}>{profileData.city}</Text>
+        <Text style={styles.name}>{profileData.fullName || 'Chưa cập nhật'}</Text>
+        <Text style={styles.position}>{profileData.position || 'Người dùng hệ thống'}</Text>
+        <Text style={styles.hospital}>{profileData.city || 'Chưa cập nhật'}</Text>
 
+        {/* Có thể thêm các thống kê nếu cần */}
         <View style={styles.statsContainer}>
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{profileData.stats.patients}</Text>
-            <Text style={styles.statLabel}>Bệnh nhân</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{profileData.stats.alerts}</Text>
-            <Text style={styles.statLabel}>Cảnh báo</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{profileData.stats.activeCases}</Text>
-            <Text style={styles.statLabel}>Ca đang theo dõi</Text>
+            <Text style={styles.statNumber}>0</Text>
+            <Text style={styles.statLabel}>Hoạt động</Text>
           </View>
         </View>
       </View>
@@ -66,13 +116,15 @@ const Profile = ({ navigation }) => {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Thông tin liên hệ</Text>
         <View style={styles.infoItem}>
-          <Icon name="email" size={20} color="#666" />
-          <Text style={styles.infoText}>{profileData.email}</Text>
+          <Icon name="phone" size={20} color="#666666" />
+          <Text style={styles.infoText}>{profileData.phoneNumber || 'Chưa cập nhật'}</Text>
         </View>
-        <View style={styles.infoItem}>
-          <Icon name="phone" size={20} color="#666" />
-          <Text style={styles.infoText}>{profileData.phone}</Text>
-        </View>
+        {profileData.email && (
+          <View style={styles.infoItem}>
+            <Icon name="email" size={20} color="#666666" />
+            <Text style={styles.infoText}>{profileData.email}</Text>
+          </View>
+        )}
       </View>
 
       {/* Recent Activities */}
@@ -85,7 +137,9 @@ const Profile = ({ navigation }) => {
             </View>
             <View style={styles.activityContent}>
               <Text style={styles.activityAction}>{activity.action}</Text>
-              <Text style={styles.activityPatient}>{activity.patient}</Text>
+              {activity.patient && (
+                <Text style={styles.activityPatient}>{activity.patient}</Text>
+              )}
               <Text style={styles.activityTime}>{activity.time}</Text>
             </View>
           </View>
@@ -93,7 +147,7 @@ const Profile = ({ navigation }) => {
       </View>
 
       {/* Logout Button */}
-      <TouchableOpacity style={styles.logoutButton}>
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Đăng xuất</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -106,6 +160,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loginText: {
+    color: '#2E86C1',
+    marginTop: 10,
   },
   header: {
     flexDirection: 'row',
