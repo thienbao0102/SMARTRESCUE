@@ -4,7 +4,7 @@ import { Alert } from 'react-native';
 import EventSource from 'react-native-sse';
 import { navigate } from '../navigation/RootNavigation';
 
-const IPV4 = '192.168.0.121';
+export const IPV4 = '192.168.1.5';
 const id = '64e8fa54b84c2b3d7e5abc10';
 
 //xử lý nhận cảnh báo từ sever gửi về
@@ -45,12 +45,16 @@ export async function handlerLogin(phoneNumber: string, password: string) {
     }
 
     try {
-        const response = await fetch(`http://${IPV4}:8000/login-relative`, {
+        const response = await fetch(`http://${IPV4}:8000/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ phoneNumber, password }),
+            body: JSON.stringify({ 
+                phoneNumber : phoneNumber,
+                password : password,
+                userRole : 1,
+            }),
         });
 
         const data = await response.json();
@@ -62,12 +66,12 @@ export async function handlerLogin(phoneNumber: string, password: string) {
         await Promise.all([
             AsyncStorage.setItem('accessToken', data.accessToken),
             AsyncStorage.setItem('refreshToken', data.refreshToken),
-            AsyncStorage.setItem('userData', JSON.stringify(data.user))
+            AsyncStorage.setItem('userData', JSON.stringify(data.user)),
         ]);
 
         // Navigation sẽ được xử lý ở component
         return { success: true, user: data.user };
-        
+
     } catch (error: any) {
         Alert.alert("Lỗi đăng nhập", error.message || 'Không thể kết nối đến server');
         return { success: false };
