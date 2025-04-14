@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { IPV4 } from '../services/HandlerDataFromSever';
 
-const IPV4 = '192.168.0.121'; // Địa chỉ IP của máy chủ
 const Register = () => {
     const [fullName, setFullName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -31,14 +31,15 @@ const Register = () => {
                     password,
                 }),
             });
-    
+
             const data = await response.json();
-    
+            console.log('Dữ liệu nhận được từ API:', data);
+
             if (response.status === 201) {
                 Alert.alert('Thành công', `Chào mừng, ${data.user.fullName}!`);
                 // Lưu thông tin user vào AsyncStorage hoặc state management
                 // data.user._id sẽ là string
-                navigation.navigate('Home', { userId: data.user._id });
+                navigation.navigate('Home', { userId: data.user._id, userRole: data.user.userRole });
             } else {
                 Alert.alert('Lỗi', data.message || 'Đăng ký thất bại');
             }

@@ -2,7 +2,6 @@ import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, Acti
 import React, { useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { handlerLogin, checkToken } from '../services/HandlerDataFromSever';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login = () => {
   const navigation = useNavigation();
@@ -18,11 +17,8 @@ const Login = () => {
 
   // Kiểm tra token khi mở màn hình
   useEffect(() => {
-    const checkAuth = async () => {
-      await checkToken();
-    };
-    checkAuth();
-  }, []);
+  //  checkToken();
+ }, []);
 
   const validateForm = () => {
     let valid = true;
@@ -49,12 +45,12 @@ const Login = () => {
   };
 
   const handleLogin = async () => {
-    Keyboard.dismiss();
-    
+
+
     if (!validateForm()) return;
 
     setIsLoading(true);
-    
+
     try {
       const result = await handlerLogin(credentials.phoneNumber, credentials.password);
       
