@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { IPV4 } from '../services/HandlerDataFromSever';
 
-const IPV4 = '192.168.1.5'; // Địa chỉ IP của máy chủ
 const Register = () => {
     const [fullName, setFullName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -31,12 +31,15 @@ const Register = () => {
                     password,
                 }),
             });
-    
+
             const data = await response.json();
-    
+            console.log('Dữ liệu nhận được từ API:', data);
+
             if (response.status === 201) {
                 Alert.alert('Thành công', `Chào mừng, ${data.user.fullName}!`);
-                navigation.navigate('Home');
+                // Lưu thông tin user vào AsyncStorage hoặc state management
+                // data.user._id sẽ là string
+                navigation.navigate('Home', { userId: data.user._id, userRole: data.user.userRole });
             } else {
                 Alert.alert('Lỗi', data.message || 'Đăng ký thất bại');
             }
@@ -44,12 +47,6 @@ const Register = () => {
             console.error('Lỗi kết nối:', error);
             Alert.alert('Lỗi', 'Không thể kết nối đến máy chủ');
         }
-
-        // Xử lý đăng ký thành công ở đây
-        Alert.alert('Thành công', `Chào mừng, ${fullName}!`);
-
-        // Chuyển sang màn hình Home
-        navigation.navigate('Home');
     };
 
     return (

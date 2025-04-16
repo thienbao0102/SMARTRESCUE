@@ -5,7 +5,7 @@ import EventSource from 'react-native-sse';
 import { navigate } from '../navigation/RootNavigation';
 import { Dispatch, SetStateAction } from 'react';
 
-const IPV4 = '192.168.0.102';
+export const IPV4 = '192.168.1.5';
 const id = '64e8fa54b84c2b3d7e5abc10';
 
 type Patient = {
@@ -47,61 +47,45 @@ export async function reciveMessageWarning() {
 }
 
 //API login
-export function handlerLogin(phoneNumber: string, password: string) {
-    if (phoneNumber.length !== 10 || password.length < 8 || password.length > 25) {
-        Alert.alert("Thông báo", "Số điện thoại không hợp lệ hoặc mật khẩu không hợp lệ!",
-            [
-                {
-                    text: 'oke',
-                    style: 'cancel',
-                },
-            ],
-            { cancelable: false }
-        );
+export async function handlerLogin(phoneNumber: string, password: string) {
+    if (phoneNumber.length !== 10 || password.length < 8) {
+        Alert.alert("Lỗi", "Số điện thoại phải có 10 số và mật khẩu ít nhất 8 ký tự");
         return;
     }
 
-    fetch(`http://${IPV4}:8000/login`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            phoneNumber: phoneNumber,
-            password: password,
-            userRole: 0,
-        }),
-    })
-        .then(async (response) => {
-            if (response.status !== 200) {
-                const errorData = await response.json();
-                Alert.alert("Thông báo", errorData.message, [
-                    {
-                        text: 'oke',
-                        style: 'cancel',
-                    },
-                ],
-                    { cancelable: false }
-                );
-                return;
-            }
-            return response.json();
-        })
-        .then(async (data) => {
-            if (!data) return;
-            await AsyncStorage.setItem("accessToken", data.accessToken);
-            await AsyncStorage.setItem("refreshToken", data.refreshToken);
-            await AsyncStorage.setItem("relativesUser", JSON.stringify(data.user));
-            console.log('Access token:', await AsyncStorage.getItem("accessToken"));
-            console.log('Refresh token:', await AsyncStorage.getItem("refreshToken"));
-            console.log('User:', await AsyncStorage.getItem("relativesUser"));
-            navigate('Home');
-        })
-        .catch(error => {
-            console.error('Error sending warning:', error?.message ?? error);
-            console.log('Full error object:', JSON.stringify(error, null, 2));
+    try {
+        const response = await fetch(`http://${IPV4}:8000/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                phoneNumber : phoneNumber,
+                password : password,
+                userRole : 1,
+            }),
         });
-};
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Đăng nhập thất bại');
+        }
+
+        await Promise.all([
+            AsyncStorage.setItem('accessToken', data.accessToken),
+            AsyncStorage.setItem('refreshToken', data.refreshToken),
+            AsyncStorage.setItem('userData', JSON.stringify(data.user)),
+        ]);
+
+        // Navigation sẽ được xử lý ở component
+        return { success: true, user: data.user };
+
+    } catch (error: any) {
+        Alert.alert("Lỗi đăng nhập", error.message || 'Không thể kết nối đến server');
+        return { success: false };
+    }
+}
 
 //api lấy danh sách bệnh nhân theo id của người thân
 export async function getListPatient(setData: Dispatch<SetStateAction<Patient[]>>) {
