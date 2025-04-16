@@ -1,5 +1,4 @@
 import { Alert, Linking, PermissionsAndroid, Platform } from 'react-native';
-// import { useState } from 'react';
 import GetLocation from 'react-native-get-location';
 
 //hàm yêu cầu cấp quyền

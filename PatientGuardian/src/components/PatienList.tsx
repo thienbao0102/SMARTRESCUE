@@ -9,7 +9,7 @@ const PatientList = ({ patients, onPressItem }) => {
     >
       <View style={styles.row}>
         <Image
-          source={{ uri: item.avatar }}
+          source={{ uri: 'https://i.pravatar.cc/150?img=3' }}
           style={styles.avatar}
         />
         <View style={styles.info}>
@@ -29,7 +29,7 @@ const PatientList = ({ patients, onPressItem }) => {
     <FlatList
       data={patients}
       renderItem={renderItem}
-      keyExtractor={item => item.id}
+      keyExtractor={item => item._id}
     />
   );
 };

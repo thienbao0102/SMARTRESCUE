@@ -1,10 +1,15 @@
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import React, { useState } from 'react';
-import { handlerLogin } from '../services/HandlerDataFromSever';
+import React, { useEffect, useState } from 'react';
+import { checkToken, handlerLogin } from '../services/HandlerDataFromSever';
 
-const Login = ({ navigation }:any) => {
+const Login = ({ navigation }: any) => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+
+  useEffect(() => {
+    checkToken();
+  }, []);
+
   return (
     <View style={styles.container}>
       <Image

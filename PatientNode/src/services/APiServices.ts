@@ -5,20 +5,18 @@ import { navigate } from "../navigation/RootNavigation";
 const IPV4 = '192.168.72.96';
 //API gửi thông báo đển người thân khi có sự cố xảy ra với người dùng
 export async function sendWarning() {
-    const relativeUser = await AsyncStorage.getItem("patientUser");
-    const relative = relativeUser ? JSON.parse(relativeUser) : null;
-    const relativeId = relative ? relative.prioritize : null;
+    const patientUser = await AsyncStorage.getItem("patientUser");
+    const patient = patientUser ? JSON.parse(patientUser) : null;
+    const relativeId = patient ? patient.prioritize : null;
+    const patientId = patient ? patient._id : null;
     const accessToken = await AsyncStorage.getItem("accessToken");
 
-    fetch(`http://${IPV4}:8000/warning/${relativeId}`, {
-        method: 'POST',
+    fetch(`http://${IPV4}:8000/warning/${relativeId}/${patientId}`, {
+        method: 'GET',
         headers: {
             'Authorization': `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            message: 'Warning: High temperature detected!',
-        }),
     })
         .then(response => {
             if (response.status === 401 || response.status === 403) {
@@ -103,7 +101,7 @@ export function handlerLogin(phoneNumber: string, password: string) {
         body: JSON.stringify({
             phoneNumber: phoneNumber,
             password: password,
-            userRole: 1,
+            userRole: 0, // 0: bệnh nhân, 1: người thân
         }),
     })
         .then(async (response) => {

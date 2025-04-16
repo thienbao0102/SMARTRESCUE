@@ -3,7 +3,7 @@ import { View, ScrollView, Text, Image, StyleSheet, TouchableOpacity } from 'rea
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import HeaderPatient from '../components/HeaderPatient';
 
-const PatientDetailScreen = ({ route, navigation }) => {
+const PatientDetailScreen = ({ route, navigation }: any) => {
   const { patient } = route.params;
 
   return (
@@ -11,28 +11,28 @@ const PatientDetailScreen = ({ route, navigation }) => {
       <HeaderPatient
         notificationCount={0}
         iconName="arrow-left"
-        onNotificationPress={() => navigation.goBack()} title={undefined}/>
-      
+        onNotificationPress={() => navigation.goBack()} title={undefined} />
+
       <ScrollView>
         <View style={styles.card}>
           <Image
-            source={{ uri: patient.avatar }}
+            source={{ uri: 'https://i.pravatar.cc/150?img=3' }}
             style={styles.avatarLarge}
           />
           <Text style={styles.name}>{patient.name}</Text>
-          {/* Nhip tim */}
+          {/* tuổi */}
           <View style={styles.detailRow}>
-            <Icon name="favorite" size={20} color="red" />
-            <Text style={styles.detailText}>Nhịp tim: {patient.heartRate} bpm</Text>
+            <Icon name="person" size={20} color="red" />
+            <Text style={styles.detailText}>Tuổi: {patient.age}</Text>
           </View>
-          {/* chi so spO2 */}
+          {/* số điện thoại */}
           <View style={styles.detailRow}>
-            <Icon name="favorite" size={20} color="red" />
-            <Text style={styles.detailText}>spO2: {patient.heartRate} </Text>
+            <Icon name="phone" size={20} color="red" />
+            <Text style={styles.detailText}>STD: {patient.phoneNumber} </Text>
           </View>
           <View style={styles.detailRow}>
-            <Icon name="favorite" size={20} color="red" />
-            <Text style={styles.detailText}>Huyết áp: {patient.heartRate} </Text>
+            <Icon name="health-and-safety" size={20} color="red" />
+            <Text style={styles.detailText}>Bệnh: {patient.diseaseDescription} </Text>
           </View>
           {/* dia chi */}
           <View style={styles.detailRow}>
@@ -43,7 +43,7 @@ const PatientDetailScreen = ({ route, navigation }) => {
 
         <TouchableOpacity
           style={styles.locationButton}
-          onPress={() => navigation.navigate('FollowPatient', { patientId: patient.id })}
+          onPress={() => navigation.navigate('FollowPatient', { patientId: patient._id })}
         >
           <Text style={styles.emergencyText}>Xem vị trí bệnh nhân</Text>
         </TouchableOpacity>

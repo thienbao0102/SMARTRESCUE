@@ -1,30 +1,60 @@
 // screens/FollowPatient.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import MapFollower from '../components/MapFollower';
 import ViewHistoryButton from '../components/ViewHistoryButton';
-import { patients } from '../data/patient';
+import { getLocationPatient, getRoadHistoryPatient } from '../services/HandlerDataFromSever';
+import DropdownModal from '../components/PickerCustom';
+import ViewDirectionButton from '../components/ViewDirectionButton';
+import { getCurrentLocation, getRoute } from '../services/HandlerService';
 
-const FollowPatient = ({ route, navigation }) => {
+const FollowPatient = ({ route, navigation }: any) => {
   const { patientId } = route.params;
+  console.log('patientId:', patientId);
+  const [dataFromSever, setDataFromSever] = useState([]); // Dữ liệu từ server
+  const [currentLocation, setCurrentLocation] = useState({
+    latitude: 0,
+    longitude: 0,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  });
+  const [direction, setDirection] = useState([]); // Lịch sử đường đi
+  const [showRoadHistoryOfDay, setShowRoadHistoryOfDay] = useState(false); //show hộp chọn ngày
+  const [selectedDate, setSelectedDate] = useState(''); //ngày đã chọn
 
-  const patient = patients.find(p => p.id === patientId);
+  //goi api lay vi tri hien tai cua benh nhan va lich su di chuyen
+  useEffect(() => {
+    getLocationPatient(patientId, setCurrentLocation);
+    getRoadHistoryPatient(patientId, setDataFromSever);
+  }, []);
 
-  const currentLocation = {
-    latitude: patient?.latitude || 0,
-    longitude: patient?.longitude || 0,
-    latitudeDelta: 0.05,
-    longitudeDelta: 0.05,
-  };
+  //tạo mảng chứa các ngày của lịch sử đường đi
+  const availableDates = dataFromSever.map(item => ({
+    label: item.date,
+    value: item.date,
+  }));
+  console.log('availableDates:', availableDates);
 
-  const [showHistory, setShowHistory] = useState(false);
+  //Lọc dữ liệu theo ngày đã chọn
+  useEffect(() => {
+    const filterPathByDate = () => {
+      if (!selectedDate) return; // Nếu không có ngày đã chọn thì không làm gì cả
+      const historyForDate = dataFromSever.find(item => item.date === selectedDate);
 
-  // Vị trí trước đó giả lập (ví dụ cách 0.01 độ)
-  const previousLocation = {
-    latitude: currentLocation.latitude - 0.01,
-    longitude: currentLocation.longitude - 0.01,
-  };
+      if (historyForDate) {
+        const convertedPath = historyForDate.path.map((point: any) => ({
+          latitude: point.coordinates[1],
+          longitude: point.coordinates[0],
+        }));
+        console.log('convertedPath:', convertedPath);
+        setDirection(convertedPath);
+      } else {
+        setDirection([]); // nếu không có path thì để trống
+      }
+    };
+    filterPathByDate();
+  }, [dataFromSever, selectedDate]);
 
   return (
     <View style={styles.container}>
@@ -34,14 +64,34 @@ const FollowPatient = ({ route, navigation }) => {
         <Text style={styles.backText}>Quay lại</Text>
       </TouchableOpacity>
 
+      {/* nut xem duong di */}
+      <ViewDirectionButton onPress={async()=>{
+        const region = await getCurrentLocation();
+        console.log('region:', region);
+        getRoute(region, currentLocation, setDirection);
+        console.log('direction getRoute:', direction);
+      }}/>
+
       {/* Nút xem lịch sử */}
-      <ViewHistoryButton onPress={() => setShowHistory(!showHistory)} />
+      <ViewHistoryButton onPress={() => setShowRoadHistoryOfDay(true)} />
+
+      {/* Chọn ngày xem lịch sử */}
+      {showRoadHistoryOfDay && (
+        <DropdownModal
+          visible={showRoadHistoryOfDay}
+          onClose={() => setShowRoadHistoryOfDay(false)}
+          data={availableDates}
+          onSelect={(item: string) => {
+            setSelectedDate(item);
+            setShowRoadHistoryOfDay(false);
+          }}
+        />
+      )}
 
       {/* Bản đồ */}
       <MapFollower
         location={currentLocation}
-        name={patient?.name}
-        historyLocation={showHistory ? previousLocation : null}
+        direction={direction.length > 0 ? direction : undefined} // Nếu không có đường đi thì không truyền vào prop direction
       />
     </View>
   );
