@@ -5,8 +5,8 @@ import EventSource from 'react-native-sse';
 import { navigate } from '../navigation/RootNavigation';
 import { Dispatch, SetStateAction } from 'react';
 
-export const IPV4 = '192.168.1.5';
-const id = '64e8fa54b84c2b3d7e5abc10';
+export const IPV4 = '192.168.72.96'; // Địa chỉ IP của server
+// const id = '64e8fa54b84c2b3d7e5abc10';
 
 type Patient = {
     _id: string;
@@ -19,6 +19,11 @@ type Patient = {
 //xử lý nhận cảnh báo từ sever gửi về
 export async function reciveMessageWarning() {
     const accessToken = await AsyncStorage.getItem("accessToken")
+    const relatives = await AsyncStorage.getItem("relativesUser")
+    console.log("relatives:", relatives)
+    const id = relatives ? JSON.parse(relatives)._id : null;
+
+    console.log("id:", id)
 
     if (accessToken) {
         const decoded = jwtDecode(accessToken);
@@ -41,6 +46,20 @@ export async function reciveMessageWarning() {
         console.log('Dữ liệu nhận được từ server:', data);
 
         // Xử lý dữ liệu như: hiển thị thông báo, điều hướng...
+        Alert.alert(
+            "Thông báo",
+            `Bệnh nhân ${data.name}, ${data.age} đã gặp tai nạn!`,
+            [
+                {
+                    text: 'Tôi biết rồi',
+                },
+                {
+                    text: 'Hủy',
+                    style: 'cancel',
+                },
+            ],
+            { cancelable: false }
+        );
     });
 
     // source.open();
@@ -59,10 +78,10 @@ export async function handlerLogin(phoneNumber: string, password: string) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ 
-                phoneNumber : phoneNumber,
-                password : password,
-                userRole : 1,
+            body: JSON.stringify({
+                phoneNumber: phoneNumber,
+                password: password,
+                userRole: 1,
             }),
         });
 
@@ -75,7 +94,7 @@ export async function handlerLogin(phoneNumber: string, password: string) {
         await Promise.all([
             AsyncStorage.setItem('accessToken', data.accessToken),
             AsyncStorage.setItem('refreshToken', data.refreshToken),
-            AsyncStorage.setItem('userData', JSON.stringify(data.user)),
+            AsyncStorage.setItem('relativesUser', JSON.stringify(data.user)),
         ]);
 
         // Navigation sẽ được xử lý ở component
@@ -91,8 +110,10 @@ export async function handlerLogin(phoneNumber: string, password: string) {
 export async function getListPatient(setData: Dispatch<SetStateAction<Patient[]>>) {
     const accessToken = await AsyncStorage.getItem("accessToken");
     const getRelativesUser = await AsyncStorage.getItem("relativesUser");
+
     const relativesUser = JSON.parse(getRelativesUser);
     const listPatientsID = relativesUser.patients;
+
     console.log('Relatives user- patients:', listPatientsID);
     console.log('typeof listPatientsID:', typeof listPatientsID);
 
@@ -109,6 +130,7 @@ export async function getListPatient(setData: Dispatch<SetStateAction<Patient[]>
         body: JSON.stringify({
             listPatientId: listPatientsID,
         }),
+
     })
         .then(async (response) => {
             if (response.status === 401 || response.status === 403) {
@@ -121,6 +143,7 @@ export async function getListPatient(setData: Dispatch<SetStateAction<Patient[]>
             if (!data) return;
 
             console.log('Patient list:', data);
+
             setData(data.listPatients);
         })
         .catch(error => {
@@ -151,8 +174,8 @@ export async function getLocationPatient(patientId: string, setLocation: Dispatc
             if (!data) return;
             setLocation((prev: any) => ({
                 ...prev,
-                latitude: data.location[1],
-                longitude: data.location[0],
+                latitude: data.location[0],
+                longitude: data.location[1],
             })
             );
         })

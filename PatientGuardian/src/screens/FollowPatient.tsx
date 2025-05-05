@@ -44,8 +44,8 @@ const FollowPatient = ({ route, navigation }: any) => {
 
       if (historyForDate) {
         const convertedPath = historyForDate.path.map((point: any) => ({
-          latitude: point.coordinates[1],
-          longitude: point.coordinates[0],
+          latitude: point.coordinates[0],
+          longitude: point.coordinates[1],
         }));
         console.log('convertedPath:', convertedPath);
         setDirection(convertedPath);

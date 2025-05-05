@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, Alert, ScrollView
+  StyleSheet, Alert, ScrollView,
+  ActivityIndicator
 } from 'react-native';
-import { patients } from '../data/patient';
 import HeaderPatient from '../components/HeaderPatient';
-import uuid from 'react-native-uuid'; // Thư viện tạo UUID, bạn có thể cài đặt bằng lệnh: npm install react-native-uuid
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { IPV4 } from '../services/HandlerDataFromSever';
 
 const RegisterPatientScreen = ({ navigation }) => {
   const [account, setAccount] = useState({
@@ -21,53 +22,76 @@ const RegisterPatientScreen = ({ navigation }) => {
     location: '',
   });
 
-  const handleRegister = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleRegister = async () => {
     const { username, password, confirmPassword } = account;
     const { name, age, phone, location } = info;
 
-    if (!username || !password || !confirmPassword || !name || !age || !phone || !location) {
+    // Validate
+    if (!username || !password || !confirmPassword || !name || !age || !phone) {
       Alert.alert('Lỗi', 'Vui lòng điền đầy đủ thông tin');
       return;
     }
-
     if (password !== confirmPassword) {
       Alert.alert('Lỗi', 'Mật khẩu xác nhận không khớp');
       return;
     }
+    if (!/^\d{10}$/.test(phone)) {
+      Alert.alert('Lỗi', 'Số điện thoại phải có 10 chữ số');
+      return;
+    }
 
-    //  Lưu bệnh nhân mới
-    const newPatient = {
-      id: uuid.v4().toString(),
-      username,
-      password,
-      name,
-      age,
-      phone,
-      location,
-      avatar: 'https://i.pravatar.cc/150?img=14',
-      lastCheck: 'Chưa theo dõi',
-      heartRate: 0,
-      spO2: 0,
-      bloodPressure: '---',
-      city: 'Không rõ',
-      latitude: 10.762622,
-      longitude: 106.660172,
-    };
+    setIsLoading(true);
+    try {
+      const userDataString = await AsyncStorage.getItem('userData');
+      if (!userDataString) {
+        throw new Error('User data not found in storage');
+      }
+      const userData = JSON.parse(userDataString);
+      
+      const response = await fetch(`http://${IPV4}:8000/register-by-relative`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          age: parseInt(age),
+          phoneNumber: phone,
+          password,
+          diseaseDescription: location,
+          relativeId: userData._id,
+        })
+      });
 
-    patients.push(newPatient);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Đăng ký thất bại');
 
-    Alert.alert('Thành công', 'Tài khoản đã được đăng ký');
-    navigation.navigate('PatientManagement');
+      Alert.alert('Thành công', 'Đã thêm bệnh nhân mới', [
+        { text: 'OK', onPress: () => navigation.navigate('PatientManagement') }
+      ]);
+    } catch (error) {
+      Alert.alert('Lỗi', error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
       <HeaderPatient
-              title="Đăng Ký Tài Khoản Bệnh Nhân"
-              iconName="arrow-left"
-              onNotificationPress={() => navigation.goBack()} notificationCount={undefined}      />
+        title="Đăng Ký Tài Khoản Bệnh Nhân"
+        iconName="arrow-left"
+        onNotificationPress={() => navigation.goBack()} 
+        notificationCount={undefined}
+      />
 
       <ScrollView contentContainerStyle={styles.formContainer}>
+        {isLoading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#2E86C1" />
+          </View>
+        )}
+
         <Text style={styles.sectionTitle}>Thông tin tài khoản</Text>
         <TextInput
           style={styles.input}
@@ -110,23 +134,26 @@ const RegisterPatientScreen = ({ navigation }) => {
           keyboardType="phone-pad"
           value={info.phone}
           onChangeText={(text) => setInfo({ ...info, phone: text })}
+          maxLength={10}
         />
         <TextInput
           style={styles.input}
-          placeholder="Địa chỉ"
+          placeholder="Địa chỉ/Mô tả bệnh"
           value={info.location}
           onChangeText={(text) => setInfo({ ...info, location: text })}
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={handleRegister}
+          disabled={isLoading}
+        >
           <Text style={styles.buttonText}>ĐĂNG KÝ</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
   );
 };
-
-export default RegisterPatientScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -158,10 +185,27 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 20,
     alignItems: 'center',
+    opacity: 1,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
   },
   buttonText: {
     color: '#ffffff',
     fontWeight: '600',
     fontSize: 16,
   },
+  loadingContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    zIndex: 1000,
+  },
 });
+
+export default RegisterPatientScreen;

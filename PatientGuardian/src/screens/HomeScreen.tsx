@@ -26,7 +26,7 @@ const HomeScreen = ({ navigation }: any) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <AdminHeader title="Trang chủ " notificationCount={1} onNotificationPress={() => { }} />
+      <AdminHeader title="Trang chủ " notificationCount={1} onNotificationPress={() => { } } onBackPress={undefined} />
       <PatientList
         patients={listPatiens}
         onPressItem={(patient: any) =>

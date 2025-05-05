@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react-native';
 
 const PatientList = ({ patients, onPressItem }) => {
+  console.log('Received patients:', patients);
+
   const renderItem = ({ item }) => (
     <TouchableOpacity
       style={styles.card}
@@ -36,7 +38,7 @@ const PatientList = ({ patients, onPressItem }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
     margin: 8,
     padding: 12,
     borderRadius: 8,

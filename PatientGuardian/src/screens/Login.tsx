@@ -17,8 +17,8 @@ const Login = () => {
 
   // Kiểm tra token khi mở màn hình
   useEffect(() => {
-   checkToken();
- }, []);
+    checkToken();
+  }, []);
 
   const validateForm = () => {
     let valid = true;
@@ -46,14 +46,13 @@ const Login = () => {
 
   const handleLogin = async () => {
 
-
     if (!validateForm()) return;
 
     setIsLoading(true);
 
     try {
       const result = await handlerLogin(credentials.phoneNumber, credentials.password);
-      
+
       if (result?.success) {
         // Đăng nhập thành công, chuyển đến màn hình chính
         navigation.reset({
@@ -87,7 +86,7 @@ const Login = () => {
         style={styles.logo}
       />
       <Text style={styles.title}>Đăng Nhập</Text>
-      
+
       <View style={styles.inputContainer}>
         <TextInput
           style={[styles.input, errors.phoneNumber && styles.inputError]}
@@ -100,7 +99,7 @@ const Login = () => {
         />
         {errors.phoneNumber && <Text style={styles.errorText}>{errors.phoneNumber}</Text>}
       </View>
-      
+
       <View style={styles.inputContainer}>
         <TextInput
           style={[styles.input, errors.password && styles.inputError]}
@@ -122,8 +121,8 @@ const Login = () => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity 
-        style={[styles.button, isLoading && styles.buttonDisabled]} 
+      <TouchableOpacity
+        style={[styles.button, isLoading && styles.buttonDisabled]}
         onPress={handleLogin}
         disabled={isLoading}
       >
